@@ -1,60 +1,92 @@
-<div *ngIf="loading" class="text-center my-3">Loading...</div>
-<div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+<div *ngIf="loading" class="text-center my-3">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
 
-<div class="row g-3" *ngIf="appointments.length > 0">
-  <div class="col-12 col-md-6 col-lg-4" *ngFor="let appointment of appointments">
-    <div class="card h-100">
-      <div class="card-body">
-        <h5 class="card-title">ID: {{ appointment.id }}</h5>
-        <p class="card-text"><strong>Customer:</strong> {{ appointment.customerName }}</p>
-        <p class="card-text">
-          <strong>Status:</strong>
-          <span [ngClass]="getStatusClass(appointment.appointmentStatus)">
-            {{ getStatusText(appointment.appointmentStatus) }}
-          </span>
-        </p>
-        <p class="card-text"><strong>Created Date:</strong> {{ appointment.createdDate | date:'short' }}</p>
-        <!-- <p class="card-text"><strong>Notes:</strong> {{ appointment.notes }}</p> -->
-        <div class="d-flex gap-2 flex-wrap">
-          <button class="btn btn-outline-primary btn-sm" (click)="openDetailsPopup(appointment.id)">Details</button>
-          <button class="btn btn-primary btn-sm" (click)="openEditPopup(appointment.id)">Edit</button>
-          <!-- <button class="btn btn-danger btn-sm" (click)="deleteAppointment(appointment.id)">Delete</button> -->
+    <!-- FullCalendar -->
+    <div class="calendar-container mb-4">
+      <full-calendar [options]="calendarOptions"></full-calendar>
+    </div>
+
+    <!-- Cards List with buttons -->
+    <div class="row g-3">
+      <div class="col-12 col-sm-6 col-lg-4 col-xl-3" *ngFor="let appointment of appointments">
+        <div class="card h-100 shadow-sm appointment-card">
+          <div class="card-body">
+            <h6 class="card-title text-primary mb-2">{{ appointment.customerName }}</h6>
+            <p class="card-text mb-1">
+              <small class="text-muted">Status:</small>
+              <span [class]="getStatusClass(appointment.appointmentStatus)">
+                {{ getStatusText(appointment.appointmentStatus) }}
+              </span>
+            </p>
+            <p class="card-text mb-1">
+              <small class="text-muted">Created:</small>
+              <span class="text-dark">{{ appointment.createdDate | date:'short' }}</span>
+            </p>
+            <p class="card-text">
+              <small class="text-muted">Notes:</small>
+              <span class="text-dark">{{ appointment.notes || 'No notes' }}</span>
+            </p>
+          </div>
+          <div class="card-footer bg-transparent border-top-0 p-2">
+            <div class="btn-group w-100" role="group">
+              <button
+                class="btn btn-outline-info btn-sm flex-fill"
+                (click)="openDetailsModal(appointment.id)"
+                title="View Details">
+                <i class="fas fa-eye me-1"></i>Details
+              </button>
+              <button
+                class="btn btn-warning btn-sm flex-fill text-white"
+                (click)="openEditModal(appointment.id)"
+                title="Edit Appointment">
+                <i class="fas fa-edit me-1"></i>Edit
+              </button>
+              <button
+                class="btn btn-danger btn-sm flex-fill"
+                (click)="deleteAppointment(appointment.id)"
+                title="Delete Appointment">
+                <i class="fas fa-trash me-1"></i>Delete
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<div *ngIf="appointments.length === 0 && !loading" class="text-center my-3">
-  No appointments found.
-</div>
-
-<!-- Modal Update -->
-<div class="modal fade" id="editModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Edit Appointment</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <app-update-form-appointment *ngIf="selectedAppointmentId" [appointmentId]="selectedAppointmentId"></app-update-form-appointment>
+    <!-- Modal Update -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-warning text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-edit me-2"></i>Edit Appointment
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <app-update-form-appointment *ngIf="selectedAppointmentId" [appointmentId]="selectedAppointmentId"></app-update-form-appointment>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Modal Details -->
-<div class="modal fade" id="Details" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Appointment Details</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <app-display-by-id *ngIf="selectedAppointmentId" [appointmentId]="selectedAppointmentId"></app-display-by-id>
+    <!-- Modal Details -->
+    <div class="modal fade" id="detailsModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-info-circle me-2"></i>Appointment Details
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <app-display-by-id *ngIf="selectedAppointmentId" [appointmentId]="selectedAppointmentId"></app-display-by-id>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
