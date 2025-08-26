@@ -1,0 +1,28 @@
+<div class="container mt-4">
+
+  <!--Add New Schedule -->
+  <div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">
+      Add New Schedule
+    </button>
+  </div>
+
+  <!-- عرض كل المواعيد -->
+  <app-display-all-appointments></app-display-all-appointments>
+
+  <!-- Modal Add New Schedule -->
+  <div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add New Schedule</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <app-add-form-appointment></app-add-form-appointment>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

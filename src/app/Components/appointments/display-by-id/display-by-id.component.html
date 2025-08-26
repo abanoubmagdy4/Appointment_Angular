@@ -1,0 +1,52 @@
+<div class="d-flex justify-content-center align-items-start p-3" style="min-height: 300px; max-height: 80vh; overflow-y: auto;">
+
+  <div class="w-100">
+
+    <!-- Loading Spinner -->
+    <div *ngIf="loading" class="d-flex justify-content-center align-items-center my-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="!loading && errorMessage" class="alert alert-danger text-center">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Appointment Details Card -->
+    <div *ngIf="!loading && appointment" class="card shadow w-100">
+
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Appointment Details</h5>
+      </div>
+
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <strong>Customer Name:</strong>
+          <span>{{ appointment.customerName }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <strong>Created Date:</strong>
+          <span>{{ appointment.createdDate | date:'medium' }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <strong>Status:</strong>
+          <span [ngClass]="getStatusClass(appointment.appointmentStatus)">
+            {{ getStatusText(appointment.appointmentStatus) }}
+          </span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+          <strong>Notes:</strong>
+          <span class="text-end">{{ appointment.notes || 'No notes' }}</span>
+        </li>
+      </ul>
+
+      <div class="card-body d-flex justify-content-end">
+        <button class="btn btn-secondary" (click)="goBack()">Back</button>
+      </div>
+
+    </div>
+
+  </div>
+</div>

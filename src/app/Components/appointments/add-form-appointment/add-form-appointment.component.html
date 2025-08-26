@@ -1,0 +1,65 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-3 border rounded shadow-sm bg-light">
+  <!-- Customer Name -->
+  <div class="mb-3">
+    <label for="customerName" class="form-label">Customer Name</label>
+    <input
+      type="text"
+      id="customerName"
+      class="form-control"
+      formControlName="customerName"
+      placeholder="Enter customer name">
+    <div *ngIf="form.get('customerName')?.invalid && form.get('customerName')?.touched" class="text-danger mt-1">
+      <small *ngIf="form.get('customerName')?.errors?.['required']">
+        Customer name is required
+      </small>
+      <small *ngIf="form.get('customerName')?.errors?.['maxlength']">
+        Customer name cannot exceed 100 characters
+      </small>
+    </div>
+  </div>
+
+  <!-- Created Date -->
+  <div class="mb-3">
+    <label for="createdDate" class="form-label">Created Date</label>
+    <input
+      type="datetime-local"
+      id="createdDate"
+      class="form-control"
+      formControlName="createdDate">
+    <div *ngIf="form.get('createdDate')?.invalid && form.get('createdDate')?.touched" class="text-danger mt-1">
+      <small>Date and time are required</small>
+    </div>
+  </div>
+
+  <!-- Appointment Status -->
+  <div class="mb-3">
+    <label for="appointmentStatus" class="form-label">Appointment Status</label>
+    <select id="appointmentStatus" class="form-select" formControlName="appointmentStatus">
+    <option [value]="appointmentStatus.Scheduled">Scheduled</option>
+    <option [value]="appointmentStatus.Completed">Completed</option>
+    <option [value]="appointmentStatus.Canceled">Canceled</option>
+
+    </select>
+    <div *ngIf="form.get('appointmentStatus')?.invalid && form.get('appointmentStatus')?.touched" class="text-danger mt-1">
+      <small>Status is required</small>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="mb-3">
+    <label for="notes" class="form-label">Notes</label>
+    <textarea
+      id="notes"
+      class="form-control"
+      formControlName="notes"
+      placeholder="Notes (optional)"
+      rows="3"></textarea>
+    <div *ngIf="form.get('notes')?.invalid && form.get('notes')?.touched" class="text-danger mt-1">
+      <small *ngIf="form.get('notes')?.errors?.['maxlength']">
+        Notes cannot exceed 500 characters
+      </small>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Add Appointment</button>
+</form>
