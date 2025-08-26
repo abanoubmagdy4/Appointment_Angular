@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,6 +6,7 @@ import { AppointmentsService } from '../../../Shared/Services/Appointments.Servi
 import { AppointmentStatus } from '../../../models/Appointments/AppointmentStatus';
 import { UpdateAppointment } from '../../../models/Appointments/UpdateAppointment';
 import { AppointmentResponse } from '../../../models/Appointments/AppointmentResponse';
+import { ToastService } from '../../../Shared/Services/ToastService';
 
 @Component({
   selector: 'app-update-form-appointment',
@@ -19,7 +20,8 @@ export class UpdateFormAppointmentComponent implements OnInit, OnChanges {
   form: FormGroup;
   appointmentStatus = AppointmentStatus;
   isSubmitting = false;
-  message: string | null = null;
+
+  toast = inject(ToastService); // إضافة ToastService
 
   constructor(
     private fb: FormBuilder,
@@ -35,7 +37,6 @@ export class UpdateFormAppointmentComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    // لو جه id عند بداية الكومبوننت
     if (this.appointmentId) {
       this.loadAppointment(this.appointmentId);
     }
@@ -52,13 +53,15 @@ export class UpdateFormAppointmentComponent implements OnInit, OnChanges {
       next: (res) => {
         if (res.success && res.data) {
           this.patchForm(res.data);
+          this.toast.show('Appointment loaded successfully ✅', 'success');
         } else {
-          this.message = 'Failed to load appointment ❌';
+          this.toast.show(res.message || 'Failed to load appointment ❌', 'error');
         }
       },
       error: (err) => {
+        const apiMessage = err.error?.message || 'Error while loading appointment ❌';
+        this.toast.show(apiMessage, 'error');
         console.error(err);
-        this.message = 'Error while loading appointment ❌';
       }
     });
   }
@@ -73,30 +76,30 @@ export class UpdateFormAppointmentComponent implements OnInit, OnChanges {
   }
 
   onUpdate(): void {
-    if (this.form.valid) {
-      this.isSubmitting = true;
-      this.message = null;
-
-      const updatedAppointment: UpdateAppointment = this.form.value;
-
-      this.appointmentsService.updateAppointment(this.appointmentId, updatedAppointment).subscribe({
-        next: (res) => {
-          this.isSubmitting = false;
-          if (res.success) {
-            this.message = 'Appointment updated successfully ✅';
-            this.router.navigate(['/appointments']);
-          } else {
-            this.message = res.message || 'Something went wrong ❌';
-          }
-        },
-        error: (err) => {
-          this.isSubmitting = false;
-          this.message = 'Error while updating appointment ❌';
-          console.error(err);
-        },
-      });
-    } else {
+    if (!this.form.valid) {
       this.form.markAllAsTouched();
+      return;
     }
+
+    this.isSubmitting = true;
+    const updatedAppointment: UpdateAppointment = this.form.value;
+
+    this.appointmentsService.updateAppointment(this.appointmentId, updatedAppointment).subscribe({
+      next: (res) => {
+        this.isSubmitting = false;
+        if (res.success) {
+          this.toast.show(res.message || 'Appointment updated successfully ✅', 'success');
+          this.router.navigate(['/appointments']);
+        } else {
+          this.toast.show(res.message || 'Something went wrong ❌', 'error');
+        }
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        const apiMessage = err.error?.message || 'Error while updating appointment ❌';
+        this.toast.show(apiMessage, 'error');
+        console.error(err);
+      },
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FullCalendarModule } from '@fullcalendar/angular';
@@ -14,6 +14,7 @@ import { AppointmentStatus } from '../../../models/Appointments/AppointmentStatu
 
 import { UpdateFormAppointmentComponent } from "../update-form-appointment/update-form-appointment.component";
 import { DisplayByIdComponent } from "../display-by-id/display-by-id.component";
+import { ToastService } from '../../../Shared/Services/ToastService';
 
 declare var bootstrap: any;
 
@@ -28,8 +29,9 @@ export class DisplayAllComponent implements OnInit {
 
   appointments: AppointmentResponse[] = [];
   loading = false;
-  errorMessage = '';
   selectedAppointmentId: number | null = null;
+
+  toast = inject(ToastService); // إضافة ToastService
 
   calendarOptions: CalendarOptions = {
     initialView: 'timeGridWeek',
@@ -131,16 +133,18 @@ export class DisplayAllComponent implements OnInit {
           id: app.id.toString(),
           title: app.customerName,
           start: app.createdDate,
-          end: this.calculateEndTime(app.createdDate, 15), // مدة افتراضية 15 دقيقة
+          end: this.calculateEndTime(app.createdDate, 15),
           backgroundColor: this.getEventColor(app.appointmentStatus),
           borderColor: this.getEventBorderColor(app.appointmentStatus)
         }));
         this.loading = false;
+        this.toast.show('Appointments loaded successfully ✅', 'success');
       },
       error: (err) => {
-        this.errorMessage = 'Error while fetching appointments';
-        console.error('Error fetching appointments', err);
         this.loading = false;
+        const apiMessage = err.error?.message || 'Error while fetching appointments ❌';
+        this.toast.show(apiMessage, 'error'); 
+        console.error('Error fetching appointments', err);
       }
     });
   }
@@ -151,24 +155,23 @@ export class DisplayAllComponent implements OnInit {
     return end.toISOString();
   }
 
-
-getEventColor(status: AppointmentStatus): string {
-  switch(status) {
-    case AppointmentStatus.Scheduled: return 'linear-gradient(135deg, #ffc107, #e0a800)'; // Yellow
-    case AppointmentStatus.Completed: return 'linear-gradient(135deg, #28a745, #1e7e34)'; // Green
-    case AppointmentStatus.Canceled: return 'linear-gradient(135deg, #dc3545, #a71e2a)'; // Red
-    default: return 'linear-gradient(135deg, #6c757d, #495057)'; // Gray
+  getEventColor(status: AppointmentStatus): string {
+    switch(status) {
+      case AppointmentStatus.Scheduled: return 'linear-gradient(135deg, #ffc107, #e0a800)';
+      case AppointmentStatus.Completed: return 'linear-gradient(135deg, #28a745, #1e7e34)';
+      case AppointmentStatus.Canceled: return 'linear-gradient(135deg, #dc3545, #a71e2a)';
+      default: return 'linear-gradient(135deg, #6c757d, #495057)';
+    }
   }
-}
 
-getEventBorderColor(status: AppointmentStatus): string {
-  switch(status) {
-    case AppointmentStatus.Scheduled: return '#e0a800';
-    case AppointmentStatus.Completed: return '#1e7e34';
-    case AppointmentStatus.Canceled: return '#a71e2a';
-    default: return '#495057';
+  getEventBorderColor(status: AppointmentStatus): string {
+    switch(status) {
+      case AppointmentStatus.Scheduled: return '#e0a800';
+      case AppointmentStatus.Completed: return '#1e7e34';
+      case AppointmentStatus.Canceled: return '#a71e2a';
+      default: return '#495057';
+    }
   }
-}
 
   openDetailsModal(id: number) {
     this.selectedAppointmentId = id;
@@ -188,40 +191,37 @@ getEventBorderColor(status: AppointmentStatus): string {
     }
   }
 
-deleteAppointment(id: number) {
-  if (confirm('Are you sure you want to delete this appointment?')) {
-    console.log("Deleting appointment:", id);
-
-    // Call the delete function from the service
-    this.appointmentsService.deleteAppointment(id).subscribe({
-      next: (res) => {
-        console.log('Response:', res);
-        this.loadAppointments(); // Reload the appointments after deletion
-        alert('Appointment deleted successfully');
-      },
-      error: (err) => {
-        console.error('Error deleting appointment:', err);
-        alert('Error occurred while deleting the appointment');
-      }
-    });
+  deleteAppointment(id: number) {
+    if (confirm('Are you sure you want to delete this appointment?')) {
+      this.appointmentsService.deleteAppointment(id).subscribe({
+        next: (res) => {
+          this.loadAppointments();
+          this.toast.show(res.message || 'Appointment deleted successfully ✅', 'success');
+        },
+        error: (err) => {
+          const apiMessage = err.error?.message || 'Error occurred while deleting the appointment ❌';
+          this.toast.show(apiMessage, 'error');
+          console.error('Error deleting appointment:', err);
+        }
+      });
+    }
   }
-}
 
-getStatusText(status: AppointmentStatus): string {
-  switch(status) {
-    case AppointmentStatus.Scheduled: return 'Pending';
-    case AppointmentStatus.Completed: return 'Confirmed';
-    case AppointmentStatus.Canceled: return 'Cancelled';
-    default: return 'Unknown';
+  getStatusText(status: AppointmentStatus): string {
+    switch(status) {
+      case AppointmentStatus.Scheduled: return 'Pending';
+      case AppointmentStatus.Completed: return 'Confirmed';
+      case AppointmentStatus.Canceled: return 'Cancelled';
+      default: return 'Unknown';
+    }
   }
-}
 
-getStatusClass(status: AppointmentStatus): string {
-  switch(status) {
-    case AppointmentStatus.Scheduled: return 'status-pending';
-    case AppointmentStatus.Completed: return 'status-confirmed';
-    case AppointmentStatus.Canceled: return 'status-cancelled';
-    default: return 'badge bg-secondary';
+  getStatusClass(status: AppointmentStatus): string {
+    switch(status) {
+      case AppointmentStatus.Scheduled: return 'status-pending';
+      case AppointmentStatus.Completed: return 'status-confirmed';
+      case AppointmentStatus.Canceled: return 'status-cancelled';
+      default: return 'badge bg-secondary';
+    }
   }
-}
 }

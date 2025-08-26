@@ -1,8 +1,9 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { AppointmentsService } from '../../../Shared/Services/Appointments.Service';
 import { AppointmentResponse } from '../../../models/Appointments/AppointmentResponse';
 import { AppointmentStatus } from '../../../models/Appointments/AppointmentStatus';
 import { CommonModule } from '@angular/common';
+import { ToastService } from '../../../Shared/Services/ToastService';
 declare var bootstrap: any;
 
 @Component({
@@ -13,10 +14,11 @@ declare var bootstrap: any;
   styleUrls: ['./display-by-id.component.css']
 })
 export class DisplayByIdComponent implements OnChanges {
-@Input() appointmentId!: number;
+  @Input() appointmentId!: number;
   appointment: AppointmentResponse | null = null;
   loading: boolean = false;
-  errorMessage: string = '';
+
+  toast = inject(ToastService);
 
   constructor(private appointmentsService: AppointmentsService) {}
 
@@ -28,20 +30,22 @@ export class DisplayByIdComponent implements OnChanges {
 
   private getAppointmentById(id: number) {
     this.loading = true;
-    this.errorMessage = '';
+    this.appointment = null;
+
     this.appointmentsService.getById(id).subscribe({
       next: (res) => {
+        this.loading = false;
         if (res && res.data) {
           this.appointment = res.data;
         } else {
-          this.errorMessage = 'Appointment not found';
-          this.appointment = null;
+          this.toast.show('Appointment not found ❌', 'error');
         }
-        this.loading = false;
       },
-      error: () => {
-        this.errorMessage = 'Error loading appointment';
+      error: (err) => {
         this.loading = false;
+        const apiMessage = err.error?.message || 'Error loading appointment ❌';
+        this.toast.show(apiMessage, 'error');
+        console.error(err);
       }
     });
   }
@@ -62,12 +66,12 @@ export class DisplayByIdComponent implements OnChanges {
   getStatusText(status: AppointmentStatus): string {
     return AppointmentStatus[status];
   }
-goBack() {
-  const modalEl = document.getElementById('detailsModal');
-  if (modalEl) {
-    const modal = bootstrap.Modal.getInstance(modalEl);
-    modal?.hide();
-  }
-}
 
+  goBack() {
+    const modalEl = document.getElementById('detailsModal');
+    if (modalEl) {
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      modal?.hide();
+    }
+  }
 }
