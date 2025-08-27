@@ -82,8 +82,10 @@ export class UpdateFormAppointmentComponent implements OnInit, OnChanges {
     }
 
     this.isSubmitting = true;
-    const updatedAppointment: UpdateAppointment = this.form.value;
-
+  const updatedAppointment: UpdateAppointment = {
+    ...this.form.value,
+    appointmentStatus: Number(this.form.value.appointmentStatus)
+  };
     this.appointmentsService.updateAppointment(this.appointmentId, updatedAppointment).subscribe({
       next: (res) => {
         this.isSubmitting = false;
