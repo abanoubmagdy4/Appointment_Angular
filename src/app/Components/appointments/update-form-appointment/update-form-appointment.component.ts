@@ -67,14 +67,28 @@ export class UpdateFormAppointmentComponent implements OnInit, OnChanges {
   }
 
   private patchForm(data: AppointmentResponse): void {
+      const createdDateLocal = this.formatDateForInput(data.createdDate);
+
     this.form.patchValue({
       customerName: data.customerName,
-      createdDate: data.createdDate,
+      createdDate: createdDateLocal,
       appointmentStatus: data.appointmentStatus,
       notes: data.notes
     });
   }
+private formatDateForInput(dateString: string | Date): string {
+  const date = new Date(dateString);
 
+  const pad = (n: number) => n.toString().padStart(2, '0');
+
+  const yyyy = date.getFullYear();
+  const MM = pad(date.getMonth() + 1); 
+  const dd = pad(date.getDate());
+  const HH = pad(date.getHours());
+  const mm = pad(date.getMinutes());
+
+  return `${yyyy}-${MM}-${dd}T${HH}:${mm}`;
+}
   onUpdate(): void {
     if (!this.form.valid) {
       this.form.markAllAsTouched();
